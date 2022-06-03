@@ -1,3 +1,25 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": ["@bothrs/eslint-config", "@bothrs/eslint-config/react"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "allowList": {
+          "res": true,
+          "req": true,
+          "getInitialProps": true,
+          "Props": true,
+          "props": true
+        }
+      }
+    ],
+    "unicorn/filename-case": "off",
+    "sonarjs/no-nested-template-literals": "off",
+    "jsx-a11y/label-has-associated-control": "off",
+    "unicorn/no-null": "off"
+  }
 }
