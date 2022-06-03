@@ -1,0 +1,17 @@
+on: [pull_request]
+
+name: Lint code from PR
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn
+      - name: Lint
+        run: yarn lint
+      - name: Build NextJS
+        run: |
+          yarn build
