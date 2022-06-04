@@ -7,7 +7,6 @@ const Title = styled.h1`
 `
 
 const Home: NextPage = () => {
-  console.log(process.env.NEXT_PUBLIC_CLIENT_ID_STAVA)
   return (
     <div
       style={{

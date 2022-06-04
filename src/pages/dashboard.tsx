@@ -1,26 +1,42 @@
-import axios from 'axios'
 import { NextPage, NextPageContext } from 'next'
 
 export async function getServerSideProps(context: NextPageContext) {
-  const bearerCode = context.query.code
-  if (!bearerCode && context.res) {
+  const stravaCode = context.query.code
+  if (!stravaCode && context.res) {
     context.res.statusCode = 302
     context.res.setHeader('Location', `/`)
     return { props: {} }
   }
-  //GET ALL USERS
-  const clubData = await axios.get(
-    `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members`,
-    {
-      headers: {
-        Authorization: `Bearer ${bearerCode}`,
-      },
-    }
-  )
-  //GET ALL DATA FROM USERS IN CLUB
+  try {
+    //GET TOKEN
+    const tokenResponse = await fetch(
+      'https://www.strava.com/api/v3/oauth/token',
+      {
+        body: `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID_STAVA}&client_secret=${process.env.STRAVA_CLIENT_SECRET}&code=${stravaCode}&grant_type=authorization_code`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        method: 'POST',
+      }
+    )
+    const tokenData = await tokenResponse.json()
+    //GET ALL USERS FROM CLUB
+    const clubResponse = await fetch(
+      `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+        },
+      }
+    )
+    const clubData = await clubResponse.json()
+    //GET ALL DATA FROM USERS IN CLUB
 
-  return {
-    props: {}, // will be passed to the page component as props
+    return {
+      props: {}, // will be passed to the page component as props
+    }
+  } catch (error) {
+    console.log(error)
   }
 }
 
