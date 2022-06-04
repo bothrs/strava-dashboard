@@ -1,21 +1,4 @@
 import { NextPage, NextPageContext } from 'next'
-// interface Parameter {
-//   key: string
-//   value: string
-// }
-
-// const formatUrl = (parameters: Parameter[]) => {
-//   let body = ''
-//   parameters.forEach((parameter, index) => {
-//     body = body.concat(parameter.key)
-//     body = [...body, '=']
-//     body = body.concat(parameter.value)
-//     if (index + 1 !== parameters.length) {
-//       body = [...body, '&']
-//     }
-//   })
-//   return body
-// }
 
 export async function getServerSideProps(context: NextPageContext) {
   const stravaCode = context.query.code
@@ -48,7 +31,7 @@ export async function getServerSideProps(context: NextPageContext) {
     )
     const clubData = await clubResponse.json()
     //GET ALL DATA FROM USERS IN CLUB
-    
+
     return {
       props: {}, // will be passed to the page component as props
     }
