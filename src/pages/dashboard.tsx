@@ -1,5 +1,21 @@
-import axios from 'axios'
 import { NextPage, NextPageContext } from 'next'
+// interface Parameter {
+//   key: string
+//   value: string
+// }
+
+// const formatUrl = (parameters: Parameter[]) => {
+//   let body = ''
+//   parameters.forEach((parameter, index) => {
+//     body = body.concat(parameter.key)
+//     body = [...body, '=']
+//     body = body.concat(parameter.value)
+//     if (index + 1 !== parameters.length) {
+//       body = [...body, '&']
+//     }
+//   })
+//   return body
+// }
 
 export async function getServerSideProps(context: NextPageContext) {
   const stravaCode = context.query.code
@@ -10,29 +26,29 @@ export async function getServerSideProps(context: NextPageContext) {
   }
   try {
     //GET TOKEN
-    const { data: tokenData } = await axios.post(
-      `https://www.strava.com/oauth/token`,
+    const tokenResponse = await fetch(
+      'https://www.strava.com/api/v3/oauth/token',
       {
-        client_id: process.env.NEXT_PUBLIC_CLIENT_ID_STAVA,
-        client_secret: process.env.STRAVA_CLIENT_SECRET,
-        code: stravaCode,
-        grant_type: 'authorization_code',
-      },
-      {
-        header: {},
+        body: `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID_STAVA}&client_secret=${process.env.STRAVA_CLIENT_SECRET}&code=${stravaCode}&grant_type=authorization_code`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        method: 'POST',
       }
     )
-    //GET ALL USERS
-    const { data: clubData } = await axios.get(
-      `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members?page=&per_page=20`,
+    const tokenData = await tokenResponse.json()
+    //GET ALL USERS FROM CLUB
+    const clubResponse = await fetch(
+      `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members`,
       {
         headers: {
           Authorization: `Bearer ${tokenData.access_token}`,
         },
       }
     )
+    const clubData = await clubResponse.json()
     //GET ALL DATA FROM USERS IN CLUB
-    console.log(clubData)
+    
     return {
       props: {}, // will be passed to the page component as props
     }
