@@ -1,68 +1,91 @@
+import cookie, { serialize } from 'cookie'
 import { NextPage, NextPageContext } from 'next'
 
+import { Activity } from '../types/activity'
+
+import { getClubActivities } from './api/club/getClubActivities'
+import { getStraveToken } from './api/token/getStravaToken'
+
+const cookieOptions: cookie.CookieSerializeOptions = {
+  httpOnly: true,
+  maxAge: 21600,
+  path: '/',
+  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production',
+}
+
 export async function getServerSideProps(context: NextPageContext) {
-  const stravaCode = context.query.code
-  if (!stravaCode && context.res) {
-    context.res.statusCode = 302
-    context.res.setHeader('Location', `/`)
-    return { props: {} }
-  }
   try {
-    //GET TOKEN
-    const tokenResponse = await fetch(
-      'https://www.strava.com/api/v3/oauth/token',
-      {
-        body: `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID_STAVA}&client_secret=${process.env.STRAVA_CLIENT_SECRET}&code=${stravaCode}&grant_type=authorization_code`,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        method: 'POST',
-      }
-    )
-    // const tokenData = await tokenResponse.json()
-    // //GET ALL USERS FROM CLUB
-    // const clubResponse = await fetch(
-    //   `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members
-    //   `,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${tokenData.access_token}`,
-    //     },
-    //   }
-    // )
-    // const clubData = await clubResponse.json()
-    // //GET ALL DATA FROM USERS IN CLUB
+    const stravaCode = context.query.code as string
+    let { stravaAuth } = cookie.parse(context.req?.headers.cookie || '')
+    if (!stravaCode && context.res && !stravaAuth) {
+      context.res.statusCode = 302
+      context.res.setHeader('Location', `/`)
+      return { props: {} }
+    }
+    if (!stravaAuth && context.res) {
+      const tokenData = await getStraveToken(stravaCode)
+      stravaAuth = tokenData.access_token
+      context.res.setHeader(
+        'Set-Cookie',
+        serialize('stravaAuth', tokenData.access_token, cookieOptions)
+      )
+    }
 
-    // console.log(clubData)
-    // const userIds = clubData
-
-    console.log('token airtable', process.env.AIRTABLE_API_KEY)
-
-    const usersPromise = await fetch(
-      'https://api.airtable.com/v0/appVzgNst5ii1659k/participants?maxRecords=3&view=Grid%20view',
-      {
-        headers: {
-          Authorization: ('Bearer ' + process.env.AIRTABLE_API_KEY) as string,
-        },
-      }
-    )
-
-    const airtableUser = await usersPromise.json()
-    const userIds = airtableUser?.records
-      .map((user: unknown) => user.fields.profile_url)
-      .map((url: string) => url.split('/').at(-1))
+    const activitiesData = await getClubActivities(stravaAuth)
     return {
-      props: {}, // will be passed to the page component as props
+      props: {
+        activitiesData,
+      },
     }
   } catch (error) {
     console.log(error)
+    context.res?.setHeader('Location', `/`)
+    return { props: {} }
   }
 }
 
-const Dashboard: NextPage = () => {
+interface Props {
+  activitiesData: Activity[]
+}
+
+const Dashboard: NextPage<Props> = ({ activitiesData }: Props) => {
+  const runningActivities = activitiesData.filter((activity) => {
+    return activity.type === 'Run'
+  })
+  const noSport = activitiesData.filter((activity) => {
+    return activity.type === 'Yoga'
+  })
+
   return (
-    <div>
-      <p>Dashboard</p>
+    <div style={{ margin: '20px' }}>
+      <h1>Dashboard</h1>
+      <div style={{ display: 'flex', gap: '50px' }}>
+        <div>
+          <h2>All</h2>
+          {activitiesData.map((activity, index) => (
+            <div key={`all-${index}`}>
+              {activity.name} - {activity.type}
+            </div>
+          ))}
+        </div>
+        <div>
+          <h2>Running</h2>
+          {runningActivities.map((activity, index) => (
+            <div key={`running-${index}`}>
+              {activity.name} - {activity.type}
+            </div>
+          ))}
+        </div>
+        <div>
+          <h2>No Sport</h2>
+          {noSport.map((activity, index) => (
+            <div key={`no-sport-${index}`}>
+              {activity.name} - {activity.type}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
