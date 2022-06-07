@@ -6,16 +6,7 @@ export default async function handler(
 ) {
   try {
     const { stravaAuth } = req.cookies
-    const activitiesResponse = await fetch(
-      `https://www.strava.com/api/v3/clubs/${process.env.STRAVA_CLUB_ID}/members
-        `,
-      {
-        headers: {
-          Authorization: `Bearer ${stravaAuth}`,
-        },
-      }
-    )
-    const activitiesData = await activitiesResponse.json()
+    const activitiesData = await getClubActivities(stravaAuth)
     res.json(activitiesData)
   } catch (error) {
     console.log(error)
