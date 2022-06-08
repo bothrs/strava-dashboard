@@ -3,7 +3,7 @@ import { NextPage, NextPageContext } from 'next'
 
 import { Activity } from '../types/activity'
 
-import { getClubActivities } from './api/club/getClubActivities'
+import { getAllClubActivities } from './api/club/getClubActivities'
 import { getStraveToken } from './api/token/getStravaToken'
 
 const cookieOptions: cookie.CookieSerializeOptions = {
@@ -32,7 +32,7 @@ export async function getServerSideProps(context: NextPageContext) {
       )
     }
 
-    const activitiesData = await getClubActivities(stravaAuth)
+    const activitiesData = await getAllClubActivities(stravaAuth)
     return {
       props: {
         activitiesData,
