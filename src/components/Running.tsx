@@ -33,7 +33,7 @@ export function Running({ activities }: RunningProps) {
       sortable: true,
     },
     {
-      name: 'distance',
+      name: 'distance in km',
       selector: (row: ActivitiesForUser) =>
         formatStravaDistanceToKm(
           row[1].reduce((a, b) => a + (b.distance || 0), 0)
