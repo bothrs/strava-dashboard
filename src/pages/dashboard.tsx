@@ -1,7 +1,7 @@
 import cookie, { serialize } from 'cookie'
 import { NextPage, NextPageContext } from 'next'
-import { Running } from '../components/Running'
 
+import { Running } from '../components/Running'
 import { Activity } from '../types/activity'
 
 import { getAllClubActivities } from './api/club/getClubActivities'
