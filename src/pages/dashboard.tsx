@@ -1,6 +1,7 @@
 import cookie, { serialize } from 'cookie'
 import { NextPage, NextPageContext } from 'next'
 
+import { Running } from '../components/Running'
 import { Activity } from '../types/activity'
 
 import { getAllClubActivities } from './api/club/getClubActivities'
@@ -50,6 +51,7 @@ interface Props {
 }
 
 const Dashboard: NextPage<Props> = ({ activitiesData }: Props) => {
+  console.log(JSON.stringify(activitiesData[0]))
   const runningActivities = activitiesData.filter((activity) => {
     return activity.type === 'Run'
   })
@@ -59,6 +61,7 @@ const Dashboard: NextPage<Props> = ({ activitiesData }: Props) => {
 
   return (
     <div style={{ margin: '20px' }}>
+      <Running activities={runningActivities} />
       <h1>Dashboard</h1>
       <div style={{ display: 'flex', gap: '50px' }}>
         <div>
